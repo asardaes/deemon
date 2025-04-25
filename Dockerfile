@@ -2,6 +2,8 @@ FROM python:3.13
 
 USER 0
 
+COPY requirements.txt /
+
 RUN apt-get update \
     && apt-get install -y tini \
     && rm -rf /var/lib/apt/lists/*\
@@ -10,16 +12,14 @@ RUN apt-get update \
     && mkdir /app \
     && chown deemon:deemon /app \
     && mkdir -m 777 /config /deemix /downloads /import \
+    && pip install --no-cache-dir -r /requirements.txt \
+    && rm -f /requirements.txt
 
 USER deemon:deemon
 
 WORKDIR /app
 
-COPY requirements.txt /app/
-
-RUN pip install --user --no-cache-dir -r /app/requirements.txt \
-    && rm -f /app/requirements.txt \
-    && mkdir /home/deemon/.config \
+RUN mkdir /home/deemon/.config \
     && ln -s /config /home/deemon/.config/deemon \
     && ln -s /deemix /home/deemon/.config/deemix
 
