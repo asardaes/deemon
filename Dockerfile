@@ -1,20 +1,25 @@
-FROM ubuntu:22.04
+FROM python:3.13
 
-RUN apt-get update -y && \
-apt-get install -y python3-pip
-
-COPY ./requirements.txt /requirements.txt
+USER 0
 
 WORKDIR /
 
-RUN pip3 install -r requirements.txt && \
-mkdir /config && mkdir /deemix && mkdir /downloads && mkdir /import && \
-mkdir /root/.config && \
-ln -s /config /root/.config/deemon && \
-ln -s /deemix /root/.config/deemix
+RUN apt-get update \
+    && apt-get install -y tini \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY deemon /app/deemon
+COPY requirements.txt /requirements.txt
+
+RUN pip install --no-cache-dir -r requirements.txt \
+    && rm -f /requirements.txt \
+    && mkdir -m 777 /config /deemix /downloads /import /root/.config \
+    && ln -s /config /root/.config/deemon \
+    && ln -s /deemix /root/.config/deemix
+
+COPY deemon /app/deemon/
+COPY entry.sh /
 
 ENV PYTHONPATH="$PYTHONPATH:/app"
 
-VOLUME /config /downloads /import /deemix
+ENTRYPOINT ["tini", "-g", "--"]
+CMD ["/entry.sh"]
