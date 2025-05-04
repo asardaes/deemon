@@ -108,8 +108,7 @@ class Refresh:
                 continue
 
             if not self.allowed_record_type(payload['record_type'], release['record_type']):
-                logger.debug(f"Record type \"{release['record_type']}\" has been filtered out, skipping release "
-                             f"{release['id']}")
+                logger.info(f"Release's record type has been filtered out, skipping: {release}")
                 continue
 
             if self.release_too_old(release['release_date']):
@@ -157,7 +156,9 @@ class Refresh:
         """ Compare actual record_type against allowable """
         
         if artist_rec_type:
-            if artist_rec_type == release_rec_type or artist_rec_type == "all":
+            if artist_rec_type == "all" or artist_rec_type == release_rec_type:
+                return True
+            elif release_rec_type in artist_rec_type.split(","):
                 return True
             else:
                 return

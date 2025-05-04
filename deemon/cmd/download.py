@@ -250,11 +250,17 @@ class Download:
     def download(self, artist, artist_id, album_id, url,
                  artist_file, track_file, album_file, track_id, auto=True, monitored=False):
 
-        def filter_artist_by_record_type(artist):
+        def filter_artist_by_record_type(artist, record_type: str = None):
             album_api = self.api.get_artist_albums(query={'artist_name': '', 'artist_id': artist['id']})
             filtered_albums = []
             for album in album_api['releases']:
-                if (album['record_type'] == config.record_type()) or config.record_type() == "all":
+                if record_type is not None:
+                    if record_type != "all" and album['record_type'] in record_type.split(","):
+                        record_type = album['record_type']
+                else:
+                    record_type = config.record_type()
+
+                if record_type == "all" or album['record_type'] == record_type:
                     album_date = dates.str_to_datetime_obj(album['release_date'])
                     if self.release_from and self.release_to:
                         if album_date > self.release_from and album_date < self.release_to:
@@ -291,8 +297,8 @@ class Download:
                 except (deezer.api.DataException, IndexError):
                     logger.error(f"Track ID {track_id} not found.")
 
-        def queue_filtered_releases(api_object):
-            filtered = filter_artist_by_record_type(api_object)
+        def queue_filtered_releases(api_object, record_type: str = None):
+            filtered = filter_artist_by_record_type(api_object, record_type)
             filtered = common.exclude_filtered_versions(filtered)
 
             for album in filtered:
@@ -319,9 +325,12 @@ class Download:
             artist_id_result = get_api_result(artist_id=i)
             if not artist_id_result:
                 return
+
             logger.debug(f"Requested Artist ID: {i}, Found: {artist_id_result['name']}")
-            if artist_id_result:
-                queue_filtered_releases(artist_id_result)
+
+            artist_from_db = self.db.get_monitored_artist_by_id(artist_id=i)
+            record_type = artist_from_db['record_type'] if isinstance(artist_from_db, dict) else None
+            queue_filtered_releases(artist_id_result, record_type)
 
         def process_album_by_id(i):
             logger.debug("Processing album by ID")

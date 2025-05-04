@@ -249,11 +249,11 @@ class PlatformAPI:
                             'title': r['ALB_TITLE'],
                             'release_date': release_date,
                             'explicit_lyrics': r['EXPLICIT_ALBUM_CONTENT']['EXPLICIT_LYRICS_STATUS'],
-                            'record_type': r['TYPE'],
+                            'record_type': query['record_type'] if query['record_type'] else r['TYPE'],
                             'cover_big': cover_art,
                             'link': album_url,
                             'nb_tracks': r['NUMBER_TRACK'],
-                            }
+                        }
                     )
         else:
             api_result = self.api.get_artist_albums(artist_id=query['artist_id'], limit=limit)['data']

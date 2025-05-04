@@ -90,8 +90,18 @@ def artist_lookup(query):
                 user_input = None
             elif allowed_opts:
                 if user_input not in allowed_opts:
-                    print(f"Allowed options: " + ', '.join(str(x) for x in allowed_opts))
-                    continue
+                    if property != "record_type":
+                        print(f"Allowed options: " + ', '.join(str(x) for x in allowed_opts))
+                        continue
+
+                    sub_inputs = user_input.split(",")
+                    if any(i == "all" for i in sub_inputs):
+                        print(f"{property}={user_input} was collapsed to {property}=all")
+                        user_input = "all"
+                    elif any(i not in allowed_opts for i in sub_inputs):
+                        print(f"Allowed options: " + ', '.join(str(x) for x in allowed_opts))
+                        continue
+
             logger.debug(f"User set {property} to {user_input}")
             result[property] = user_input
             modified += 1
