@@ -249,7 +249,7 @@ class PlatformAPI:
                             'title': r['ALB_TITLE'],
                             'release_date': release_date,
                             'explicit_lyrics': r['EXPLICIT_ALBUM_CONTENT']['EXPLICIT_LYRICS_STATUS'],
-                            'record_type': query['record_type'] if query['record_type'] else r['TYPE'],
+                            'record_type': query['record_type'] if ('record_type' in query) else r['TYPE'],
                             'cover_big': cover_art,
                             'link': album_url,
                             'nb_tracks': r['NUMBER_TRACK'],
